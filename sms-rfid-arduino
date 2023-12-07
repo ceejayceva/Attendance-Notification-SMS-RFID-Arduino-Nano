@@ -1,0 +1,460 @@
+#include <SoftwareSerial.h>
+#include <SPI.h>
+#include <MFRC522.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <SoftwareSerial.h>
+#include <DS3231.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+SoftwareSerial sim(8, 9);
+
+String number = "+63999999999"; 
+
+int state1 = 0;
+int state2 = 0;
+int state3 = 0;
+int state4 = 0;
+int state5 = 0;
+int state6 = 0;
+int state7 = 0;
+int state8 = 0;
+
+#define buzzerPin  A1
+#define RST_PIN    A0
+#define SDA_PIN    10
+
+MFRC522 mfrc522(SDA_PIN, RST_PIN);
+DS3231  rtc(SDA, SCL);
+
+void setup() {
+  lcd.begin();
+  lcd.backlight();
+  Serial.begin(9600);
+  sim.begin(9600);
+  SPI.begin();
+  mfrc522.PCD_Init();
+  rtc.begin();
+  pinMode(buzzerPin, OUTPUT);
+  lcd.setCursor(0, 0);
+  lcd.print("  WELCOME TO  ");
+  lcd.setCursor(0, 1);
+  lcd.print("Attendance Sys");
+  delay(4000);
+  lcd.clear();
+}
+void loop() {
+  RTC();
+  rfid();
+}
+void RTC()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("Put Your Card to" );
+  lcd.setCursor(0, 1);
+  lcd.print("the Reader......");
+  delay(3000);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Time: ");
+  lcd.print(rtc.getTimeStr());
+  lcd.setCursor(0, 1);
+  lcd.print("Date: ");
+  lcd.print(rtc.getDateStr());
+  delay(2000);
+  lcd.clear();
+}
+
+void rfid()
+{
+  // Look for new cards
+  if ( ! mfrc522.PICC_IsNewCardPresent())
+  {
+    return;
+  }
+  // Select one of the cards
+  if ( ! mfrc522.PICC_ReadCardSerial())
+  {
+    return;
+  }
+  //Show UID on serial monitor
+  String content = "";
+  byte letter;
+  for (byte i = 0; i < mfrc522.uid.size; i++)
+  {
+    Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
+    Serial.print(mfrc522.uid.uidByte[i], HEX);
+    content.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
+    content.concat(String(mfrc522.uid.uidByte[i], HEX));
+  }
+
+  content.toUpperCase();
+
+
+  if (content.substring(1) == "83 AC 05 16" && state1 == 0) 
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("Carlo    ");
+    lcd.setCursor(7, 1);
+    lcd.print("000001");
+    info();
+    SendCarlo();
+    state1 = 1;
+  }
+  else if (content.substring(1) == "83 AC 05 16" && state1 == 1) 
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("Carlo    ");
+    lcd.setCursor(7, 1);
+    lcd.print("000001");
+    info();
+    SendCarlo();
+    state1 = 0;
+  }
+  else if (content.substring(1) == "E7 04 03 25" && state2 == 0) 
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("Jeffrey    ");
+    lcd.setCursor(7, 1);
+    lcd.print("002");
+    info();
+    SendJeffrey();
+    state2 = 1;
+  }
+  else if (content.substring(1) == "E7 04 03 25" && state2 == 1) 
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("Jeffrey    ");
+    lcd.setCursor(7, 1);
+    lcd.print("002");
+    info();
+    SendJeffrey();
+    state2 = 0;
+  }
+  else if (content.substring(1) == "E9 50 8B 59" && state3 == 0) 
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("John    ");
+    lcd.setCursor(7, 1);
+    lcd.print("003");
+    info();
+    SendJohn();
+    state3 = 1;
+  }
+  else if (content.substring(1) == "E9 50 8B 59" && state3 == 1)
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("John    ");
+    lcd.setCursor(7, 1);
+    lcd.print("003");
+    info();
+    SendJohn();
+    state3 = 0;
+  }
+  else if (content.substring(1) == "79 9C 8D 5A" && state4 == 0)
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("Glen    ");
+    lcd.setCursor(7, 1);
+    lcd.print("004");
+    info();
+    SendGlen();
+    state4 = 1;
+  }
+  else if (content.substring(1) == "79 9C 8D 5A" && state4 == 1)
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("Glen    ");
+    lcd.setCursor(7, 1);
+    lcd.print("004");
+    info();
+    SendGlen();
+    state4 = 0;
+  }
+  else if (content.substring(1) == "C9 EC 6C 59" && state5 == 0)
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("Jessa    ");
+    lcd.setCursor(7, 1);
+    lcd.print("005");
+    info();
+    SendJessa();
+    state5 = 1;
+  }
+  else if (content.substring(1) == "C9 EC 6C 59" && state5 == 1)
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("Jessa    ");
+    lcd.setCursor(7, 1);
+    lcd.print("005");
+    info();
+    SendJessa();
+    state5 = 0;
+  }
+  else if (content.substring(1) == "D9 D8 35 59" && state6 == 0)
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("Marlyn    ");
+    lcd.setCursor(7, 1);
+    lcd.print("006");
+    info();
+    SendMarlyn();
+    state6 = 1;
+  }
+  else if (content.substring(1) == "D9 D8 35 59" && state6 == 1)
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("Marlyn    ");
+    lcd.setCursor(7, 1);
+    lcd.print("006");
+    info();
+    SendMarlyn();
+    state6 = 0;
+  }
+  else if (content.substring(1) == "7C EE C4 38" && state7 == 0)
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("Joseph    ");
+    lcd.setCursor(7, 1);
+    lcd.print("007");
+    info();
+    SendJessa();
+    state7 = 1;
+  }
+  else if (content.substring(1) == "7C EE C4 38" && state7 == 1)
+  {
+    beepON();
+    lcd.clear();
+    lcd.setCursor(7, 0);
+    lcd.print("JOseph    ");
+    lcd.setCursor(7, 1);
+    lcd.print("007");
+    info();
+    SendJessa();
+    state7 = 0;
+  }
+
+   else   {
+    digitalWrite(buzzerPin, HIGH);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("ID : ");
+    lcd.print("Unknown");
+    lcd.setCursor(0, 1);
+    lcd.print("Access denied");
+    Serial.println(" Access denied");
+    delay(1500);
+    digitalWrite(buzzerPin, LOW);
+    lcd.clear();
+  }
+}
+
+void smsSend()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("Sending SMS");
+  for (int x = 11; x < 16; x++)
+  {
+    lcd.setCursor(x, 0);
+    lcd.print(".");
+    delay(1000);
+  }
+
+}
+void beepON()
+{
+  digitalWrite(buzzerPin, HIGH);
+  delay(200);
+  digitalWrite(buzzerPin, LOW);
+  delay(100);
+}
+void info()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("Name : ");
+  lcd.setCursor(0, 1);
+  lcd.print("ID   : ");
+  delay(1500);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Authorized Access");
+  delay(1000);
+  lcd.clear();
+}
+
+void SendCarlo()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("SMS Sending");
+  sim.println("AT+CMGF=1");
+  delay(1000);
+  sim.println("AT+CMGS=\"" + number + "\"\r");
+  delay(1000);
+  if (state1 == 0) {
+    const char Carlo[] = "No: 001 Carlo Parajuli has joined school at ";
+    sim.print(Carlo);
+  }
+  else if (state1 == 1) {
+    const char Carlo[] = "No: 001 Carlo has gone from school at ";
+    sim.print(Carlo);
+  }
+  sim.println(rtc.getTimeStr());
+  delay(100);
+  sim.println((char)26);
+  smsSend();
+}
+
+void SendJeffrey()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("SMS Sending");
+  sim.println("AT+CMGF=1");
+  delay(1000);
+  sim.println("AT+CMGS=\"" + number + "\"\r");
+  delay(1000);
+  if (state2 == 0) {
+    const char Jeffrey[] = "No: 002 Jeffrey has joined school at ";
+    sim.print(Jeffrey);
+  }
+  else if (state2 == 1) {
+    const char Jeffrey[] = "No: 002 Jeffrey has gone from school at ";
+    sim.print(Jeffrey);
+  }
+  sim.println(rtc.getTimeStr());
+  delay(100);
+  sim.println((char)26);
+  smsSend();
+}
+void SendJohn()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("SMS Sending");
+  sim.println("AT+CMGF=1");
+  delay(1000);
+  sim.println("AT+CMGS=\"" + number + "\"\r");
+  delay(1000);
+  if (state3 == 0) {
+    const char Jhon[] = "No: 003  Jhon has joined school at ";
+    sim.print(Jhon);
+  }
+  else if (state3 == 1) {
+    const char Jhon[] = "No: 003 Jhon has gone from school at ";
+    sim.print(Jhon);
+  }
+  sim.println(rtc.getTimeStr());
+  delay(100);
+  sim.println((char)26);
+  smsSend();
+}
+void SendGlen()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("SMS Sending");
+  sim.println("AT+CMGF=1");
+  delay(1000);
+  sim.println("AT+CMGS=\"" + number + "\"\r");
+  delay(1000);
+  if (state4 == 0) {
+    const char Glen[] = "No: 004 Glen has joined school at ";
+    sim.print(Glen);
+  }
+  else if (state4 == 1) {
+    const char Glen[] = "No: 004 Akib has gone form school at";
+    sim.print(Glen);
+  }
+  sim.println(rtc.getTimeStr());
+  delay(100);
+  sim.println((char)26);
+  smsSend();
+}
+void SendJessa()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("SMS Sending");
+  sim.println("AT+CMGF=1");
+  delay(1000);
+  sim.println("AT+CMGS=\"" + number + "\"\r");
+  delay(1000);
+  if (state5 == 0) {
+    const char Jessa[] = "No: 005 Jessa has joined school at ";
+    sim.print(Jessa);
+  }
+  else if (state5 == 1) {
+    const char Jessa[] = "No: 005 Jessa has gone form school at ";
+    sim.print(Jessa);
+  }
+  sim.println(rtc.getTimeStr());
+  delay(100);
+  sim.println((char)26);
+  smsSend();
+}
+
+void SendMarlyn()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("SMS Sending");
+  sim.println("AT+CMGF=1");
+  delay(1000);
+  sim.println("AT+CMGS=\"" + number + "\"\r");
+  delay(1000);
+  if (state6 == 0) {
+    const char Marlyn[] = "No: 006 Marlyn has joined school at ";
+    sim.print(Marlyn);
+  }
+  else if (state6 == 1) {
+    const char Marlyn[] = "No: 006 Marlyn has gone form school at ";
+    sim.print(Marlyn);
+  }
+  sim.println(rtc.getTimeStr());
+  delay(100);
+  sim.println((char)26);
+  smsSend();
+}
+void SendJoseph()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("SMS Sending");
+  sim.println("AT+CMGF=1");
+  delay(1000);
+  sim.println("AT+CMGS=\"" + number + "\"\r");
+  delay(1000);
+  if (state7 == 0) {
+    const char Joseph[] = "No: 007 Joseph has joined school at ";
+    sim.print(Joseph);
+  }
+  else if (state7 == 1) {
+    const char Joseph[] = "No: 007 Joseph has gone form school at ";
+    sim.print(Joseph);
+    
+  }
+  sim.println(rtc.getTimeStr());
+  delay(100);
+  sim.println((char)26);
+  smsSend();
+}
